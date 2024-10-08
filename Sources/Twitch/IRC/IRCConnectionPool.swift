@@ -11,12 +11,18 @@ public actor IRCConnectionPool<WebsocketProvider: WebsocketTaskProvider> {
   private var connections: [Connection] = []
 
   private let credentials: TwitchCredentials?
+  private let capabilities: [Capability]
   private let websocketProvider: WebsocketProvider
 
   private var continuation: AsyncThrowingStream<IncomingMessage, Error>.Continuation?
 
-  init(with credentials: TwitchCredentials? = nil, websocketProvider: WebsocketProvider) {
+  init(
+    with credentials: TwitchCredentials? = nil,
+    capabilities: [Capability],
+    websocketProvider: WebsocketProvider
+  ) {
     self.credentials = credentials
+    self.capabilities = capabilities
     self.websocketProvider = websocketProvider
   }
 
@@ -82,7 +88,11 @@ public actor IRCConnectionPool<WebsocketProvider: WebsocketTaskProvider> {
 
   @discardableResult private func createConnection() async throws -> Connection {
     let connection = Connection(
-      credentials: credentials, websocketProvider: websocketProvider)
+
+      credentials: credentials,
+      capabilities: capabilities,
+      websocketProvider: websocketProvider
+    )
     let messageStream = try await connection.connect()
 
     Task {

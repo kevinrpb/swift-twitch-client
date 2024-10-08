@@ -13,9 +13,14 @@ public actor TwitchIRCClient<WebsocketProvider: WebsocketTaskProvider> {
 
   public struct Options {
     let enableWriteConnection: Bool
+    let capabilities: [Capability]
 
-    public init(enableWriteConnection: Bool = true) {
+    public init(
+      enableWriteConnection: Bool = true,
+      capabilities: [Capability] = [.commands, .tags]
+    ) {
       self.enableWriteConnection = enableWriteConnection
+      self.capabilities = capabilities
     }
   }
 
@@ -36,13 +41,19 @@ public actor TwitchIRCClient<WebsocketProvider: WebsocketTaskProvider> {
 
     if options.enableWriteConnection {
       self.writeConnection = IRCConnection(
-        credentials: credentials, websocketProvider: websocketProvider)
+        credentials: credentials,
+        capabilities: options.capabilities,
+        websocketProvider: websocketProvider
+      )
     } else {
       self.writeConnection = nil
     }
 
     self.readConnectionPool = IRCConnectionPool(
-      with: credentials, websocketProvider: websocketProvider)
+      with: credentials,
+      capabilities: options.capabilities,
+      websocketProvider: websocketProvider
+    )
 
     try await writeConnection?.connect()
     let messageStream = try await readConnectionPool.connect()
