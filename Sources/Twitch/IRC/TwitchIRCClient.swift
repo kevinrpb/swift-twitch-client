@@ -13,9 +13,14 @@ public actor TwitchIRCClient {
 
   public struct Options {
     let enableWriteConnection: Bool
+    let capabilities: [Capability]
 
-    public init(enableWriteConnection: Bool = true) {
+    public init(
+      enableWriteConnection: Bool = true,
+      capabilities: [Capability] = [.commands, .tags]
+    ) {
       self.enableWriteConnection = enableWriteConnection
+      self.capabilities = capabilities
     }
   }
 
@@ -37,6 +42,7 @@ public actor TwitchIRCClient {
     if options.enableWriteConnection {
       self.writeConnection = IRCConnection(
         credentials: credentials,
+        capabilities: options.capabilities,
         urlSession: urlSession
       )
     } else {
@@ -45,6 +51,7 @@ public actor TwitchIRCClient {
 
     self.readConnectionPool = IRCConnectionPool(
       with: credentials,
+      capabilities: options.capabilities,
       urlSession: urlSession
     )
 

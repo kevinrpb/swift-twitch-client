@@ -9,13 +9,19 @@ internal actor IRCConnection {
   private let TMI: URL = URL(string: "wss://irc-ws.chat.twitch.tv:443")!
 
   private let credentials: TwitchCredentials?
+  private let capabilities: [Capability]
   private let urlSession: URLSession
 
   private var websocket: URLSessionWebSocketTask?
   private(set) var joinedChannels: Set<String> = []
 
-  init(credentials: TwitchCredentials? = nil, urlSession: URLSession) {
+  init(
+    credentials: TwitchCredentials? = nil,
+    capabilities: [Capability],
+    urlSession: URLSession
+  ) {
     self.credentials = credentials
+    self.capabilities = capabilities
     self.urlSession = urlSession
   }
 
@@ -93,7 +99,7 @@ internal actor IRCConnection {
   }
 
   private func requestCapabilities() async throws {
-    try await self.send(.capabilities([.commands, .tags]))
+    try await self.send(.capabilities(self.capabilities))
 
     // verify that we receive the capabilities message
     let nextMessage = try await websocket?.receive()
