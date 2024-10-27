@@ -62,12 +62,15 @@ public actor TwitchIRCClient<WebsocketProvider: WebsocketTaskProvider> {
     }
   }
 
-  public func stream() -> AsyncThrowingStream<IncomingMessage, Error> {
+  public func stream() -> (
+    AsyncThrowingStream<IncomingMessage, Error>,
+    AsyncThrowingStream<IncomingMessage, Error>.Continuation
+  ) {
     let (stream, continuation) = AsyncThrowingStream<IncomingMessage, Error>.makeStream()
 
     self.handlers.append(IRCMessageContinuationHandler(continuation: continuation))
 
-    return stream
+    return (stream, continuation)
   }
 
   public func listener(
